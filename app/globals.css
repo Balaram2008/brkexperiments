@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #050508;
+  --foreground: #f8fafc;
+  --surface: #0c0d12;
+  --surface-secondary: #12141c;
+  --border: rgba(255, 255, 255, 0.08);
+
+  /* OxygenOS 7.0 Flux Dynamic Defaults */
+  --flux-primary: #06B6D4;
+  --flux-secondary: #10B981;
+  --flux-glow: rgba(6, 182, 212, 0.35);
+  --flux-card-bg: rgba(13, 16, 23, 0.75);
+}
+
+.light {
+  --background: #f8fafc;
+  --foreground: #09090b;
+  --surface: #ffffff;
+  --surface-secondary: #f1f5f9;
+  --border: rgba(0, 0, 0, 0.08);
+  --flux-card-bg: rgba(255, 255, 255, 0.85);
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow-x: hidden;
+  transition: background-color 0.4s ease, color 0.3s ease;
+}
+
+/* Custom OxygenOS Flux minimal scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #050508;
+}
+::-webkit-scrollbar-thumb {
+  background: #272732;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f50;
+}
+
+/* Technical typography utility */
+.font-mono-tech {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  letter-spacing: 0.05em;
+}
+
+/* OxygenOS 7.0 Flux Liquid Glass panel */
+.flux-glass {
+  background: var(--flux-card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Fluid glow border */
+.flux-glow-border {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: all 0.3s ease;
+}
+.flux-glow-border:hover {
+  border-color: var(--flux-primary);
+  box-shadow: 0 0 25px var(--flux-glow);
+}
+
+/* OxygenOS fluid aura background blob */
+.flux-aura {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(100px);
+  pointer-events: none;
+  opacity: 0.4;
+  animation: flux-pulse 8s ease-in-out infinite alternate;
+}
+
+@keyframes flux-pulse {
+  0% {
+    transform: scale(0.9) translate(0px, 0px);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.1) translate(15px, -15px);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(0.95) translate(-10px, 10px);
+    opacity: 0.35;
+  }
+}

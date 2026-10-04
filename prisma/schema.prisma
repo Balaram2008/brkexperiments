@@ -1,0 +1,191 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String
+  passwordHash String
+  role         String        @default("USER") // USER | ADMIN
+  avatar       String?
+  bio          String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  orders       Order[]
+  entitlements Entitlement[]
+  favorites    Favorite[]
+  reviews      Review[]
+  downloadLogs DownloadLog[]
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String
+  icon        String
+  projects    Project[]
+}
+
+model Technology {
+  id       String              @id @default(cuid())
+  name     String              @unique
+  slug     String              @unique
+  color    String              @default("#7C3AED")
+  projects ProjectTechnology[]
+}
+
+model Project {
+  id                    String              @id @default(cuid())
+  title                 String
+  slug                  String              @unique
+  platform              String              @default("ESP32") // ESP32 | Arduino UNO | Arduino Nano | Arduino Mega | ESP8266
+  difficulty            String              // Beginner | Intermediate | Advanced
+  projectType           String              @default("Hardware Project")
+  buildTime             String?             // e.g. "1-2 Hours"
+  estimatedCost         String?             // e.g. "?450 - ?650"
+  youtubeUrl            String?             @default("https://www.youtube.com/@BRKEXPERIMENTS")
+  shortDescription      String
+  description           String
+  categoryId            String
+  category              Category            @relation(fields: [categoryId], references: [id])
+  technologies          ProjectTechnology[]
+  price                 Int                 @default(0) // Free access
+  discountPrice         Int?
+  currency              String              @default("INR")
+  thumbnail             String
+  gallery               String              // JSON array string
+  demoUrl               String?
+  videoUrl              String?
+  featured              Boolean             @default(false)
+  isExperiment          Boolean             @default(false)
+  experimentTag         String?
+  published             Boolean             @default(true)
+  currentVersion        String              @default("1.0.0")
+  
+  // Hardware Technical Package JSON Fields
+  bomJson               String              @default("[]") // [{ component, qty, specs }]
+  wiringTableJson       String              @default("[]") // [{ boardPin, componentPin, notes }]
+  circuitSvg            String?
+  softwareReqsJson      String              @default("[]") // ["Arduino IDE 2.x", "ESP32 Board Package"]
+  librariesJson         String              @default("[]") // [{ name, author, installMethod }]
+  architectureJson      String              @default("[]") // logic flow
+  buildInstructionsJson String              @default("[]") // [{ step, title, instruction }]
+  troubleshootingJson   String              @default("[]") // [{ problem, solution }]
+  testingProcedureJson  String              @default("{}") // { steps, expectedBaudRate, expectedSerialOutput }
+  applicationsJson      String              @default("[]") // string[]
+  codeSnippetJson       String              @default("[]") // [{ filename, language, code }]
+  faqJson               String              @default("[]") // [{ question, answer }]
+  changelogJson         String              @default("[]") // [{ version, date, notes }]
+  downloadFileName      String              @default("project.zip")
+  
+  rating                Float               @default(5.0)
+  reviewCount           Int                 @default(0)
+  purchaseCount         Int                 @default(0)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  orderItems            OrderItem[]
+  entitlements          Entitlement[]
+  favorites             Favorite[]
+  reviews               Review[]
+  downloadLogs          DownloadLog[]
+}
+
+model ProjectTechnology {
+  projectId    String
+  technologyId String
+  project      Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  technology   Technology @relation(fields: [technologyId], references: [id], onDelete: Cascade)
+  @@id([projectId, technologyId])
+}
+
+model Order {
+  id             String      @id @default(cuid())
+  orderNumber    String      @unique
+  userId         String
+  user           User        @relation(fields: [userId], references: [id])
+  totalAmount    Int
+  discountAmount Int         @default(0)
+  currency       String      @default("INR")
+  paymentMethod  String      // FREE_ACCESS | MOCK_INSTANT | STRIPE | RAZORPAY
+  paymentStatus  String      // COMPLETED
+  transactionId  String?
+  couponCode     String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  items          OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+  price     Int
+}
+
+model Entitlement {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  licenseKey String   @unique
+  grantedAt  DateTime @default(now())
+  isActive   Boolean  @default(true)
+  @@unique([userId, projectId])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  @@unique([userId, projectId])
+}
+
+model Review {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id])
+  projectId        String
+  project          Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  rating           Int
+  title            String
+  comment          String
+  verifiedPurchase Boolean  @default(true)
+  createdAt        DateTime @default(now())
+}
+
+model Coupon {
+  id            String    @id @default(cuid())
+  code          String    @unique
+  discountType  String    // PERCENTAGE | FIXED
+  discountValue Int
+  minPurchase   Int       @default(0)
+  maxDiscount   Int?
+  active        Boolean   @default(true)
+  usageCount    Int       @default(0)
+  usageLimit    Int?
+  expiresAt     DateTime?
+}
+
+model DownloadLog {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  projectId    String
+  project      Project  @relation(fields: [projectId], references: [id])
+  ipAddress    String?
+  userAgent    String?
+  downloadedAt DateTime @default(now())
+}
